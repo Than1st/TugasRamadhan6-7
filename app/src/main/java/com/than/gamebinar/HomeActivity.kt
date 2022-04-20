@@ -14,6 +14,8 @@ import com.than.gamebinar.databinding.LayoutEditBinding
 import com.than.gamebinar.model.EditRequest
 import com.than.gamebinar.model.RegisterResponse
 import com.than.gamebinar.service.ApiClient
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -63,20 +65,24 @@ class HomeActivity : AppCompatActivity() {
             }
 
         })
-        //btn login
+        //btn edit
         dialogBinding.btnEdit.setOnClickListener {
-            val data = EditRequest(
-                dialogBinding.etUsername.text.toString(),
-                dialogBinding.etEmail.text.toString()
-            )
-            ApiClient.instance.updateUser("Bearer $token", data).enqueue(object : Callback<RegisterResponse>{
+            val username = dialogBinding.etUsername.text.toString()
+            val email = dialogBinding.etEmail.text.toString()
+            ApiClient.instance.updateUser(
+                "Bearer $token",
+                username.toRequestBody("text/plain".toMediaType()),
+                email.toRequestBody("text/plain".toMediaType())
+            ).enqueue(object : Callback<RegisterResponse>{
                 override fun onResponse(
                     call: Call<RegisterResponse>,
                     response: Response<RegisterResponse>
                 ) {
                     when{
-                        response.code() == 201 -> {
+                        response.code() == 200 -> {
                             Toast.makeText(this@HomeActivity, "Update Berhasil", Toast.LENGTH_SHORT).show()
+                            getAuth(token)
+                            dialog.dismiss()
                         }
                         else -> {
                             Toast.makeText(this@HomeActivity, "Update Gagal", Toast.LENGTH_SHORT).show()
